@@ -56,7 +56,7 @@ public class MainMenu extends JFrame {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(Color.WHITE);
 
-        JLabel lblSub = new JLabel("Java OOP  •  MVC Pattern  •  DAO");
+        JLabel lblSub = new JLabel("Java OOP  •  MVC Pattern  •  DAO  •  MySQL  •  Desktop Application");
         lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblSub.setForeground(new Color(210, 220, 255));
 
@@ -77,7 +77,7 @@ public class MainMenu extends JFrame {
         grid.setBackground(BG);
         grid.setBorder(new EmptyBorder(22, 25, 22, 25));
 
-        btnSiswa    = menuCard("📚", "Data Siswa", "Kelola data, nilai & peringkat siswa", PRIMARY);
+        btnSiswa    = menuCard("📚","Data Siswa", "Kelola data, nilai & peringkat siswa", PRIMARY);
         btnKelas    = menuCard("🏫", "Data Kelas", "Tambah, edit & hapus data kelas", PURPLE);
         btnStatistik= menuCard("📊", "Statistik Nilai", "Lihat ringkasan statistik nilai per kelas", EMERALD);
         btnAbout    = menuCard("ℹ", "Tentang Aplikasi", "Informasi aplikasi dan developer", AMBER);
@@ -103,8 +103,8 @@ public class MainMenu extends JFrame {
 
         btnExit = new JButton("⏻  Keluar");
         btnExit.setBackground(DANGER);
-        btnExit.setForeground(Color.WHITE);
-        btnExit.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnExit.setForeground(Color.BLACK);
+        btnExit.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         btnExit.setFocusPainted(false);
         btnExit.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnExit.setBorder(BorderFactory.createCompoundBorder(

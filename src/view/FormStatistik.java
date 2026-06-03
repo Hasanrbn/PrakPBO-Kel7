@@ -47,7 +47,7 @@ public class FormStatistik extends JFrame {
         hText.setLayout(new BoxLayout(hText, BoxLayout.Y_AXIS));
         hText.setOpaque(false);
 
-        JLabel lblTitle = new JLabel("📊  Statistik Nilai Siswa");
+        JLabel lblTitle = new JLabel("Statistik Nilai Siswa");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(Color.WHITE);
 
@@ -60,7 +60,8 @@ public class FormStatistik extends JFrame {
         hText.add(lblSub);
         header.add(hText, BorderLayout.WEST);
 
-        JButton btnRefresh = makeBtn("↺ Refresh", PRIMARY);
+        JButton btnRefresh = makeBtn("Refresh", PRIMARY);
+        btnRefresh.setForeground(Color.BLACK);
         btnRefresh.addActionListener(e -> { model.setRowCount(0); tampilData(); });
         header.add(btnRefresh, BorderLayout.EAST);
 

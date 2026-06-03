@@ -9,59 +9,123 @@ import java.util.List;
 
 public class SiswaController {
 
-    private SiswaDAO siswaDAO;
+private SiswaDAO siswaDAO;
 
-    public SiswaController() {
-        siswaDAO = new SiswaDAO();
+public SiswaController() {
+    siswaDAO = new SiswaDAO();
+}
+
+// =========================
+// TAMBAH SISWA
+// =========================
+public boolean tambahSiswa(Siswa siswa) {
+
+    if (siswaDAO.isIdExist(siswa.getIdSiswa())) {
+        return false;
     }
 
-    public boolean tambahSiswa(Siswa siswa) {
-        // Cek ID duplikat
-        if (siswaDAO.isIdExist(siswa.getIdSiswa())) return false;
-        double nilaiAkhir = GradeHelper.hitungNilaiAkhir(siswa.getNilaiTugas(), siswa.getNilaiUjian());
-        siswa.setNilaiAkhir(nilaiAkhir);
-        siswa.setGrade(GradeHelper.hitungGrade(nilaiAkhir));
-        boolean berhasil = siswaDAO.insert(siswa);
-        if (berhasil) updateRankingPerKelas(siswa.getIdKelas());
-        return berhasil;
+    hitungNilaiDanGrade(siswa);
+
+    boolean berhasil = siswaDAO.insert(siswa);
+
+    if (berhasil) {
+        updateRankingPerKelas(siswa.getIdKelas());
     }
 
-    public boolean updateSiswa(Siswa siswa) {
-        double nilaiAkhir = GradeHelper.hitungNilaiAkhir(siswa.getNilaiTugas(), siswa.getNilaiUjian());
-        siswa.setNilaiAkhir(nilaiAkhir);
-        siswa.setGrade(GradeHelper.hitungGrade(nilaiAkhir));
-        boolean berhasil = siswaDAO.update(siswa);
-        if (berhasil) updateRankingPerKelas(siswa.getIdKelas());
-        return berhasil;
+    return berhasil;
+}
+
+// =========================
+// UPDATE SISWA
+// =========================
+public boolean updateSiswa(Siswa siswa) {
+
+    hitungNilaiDanGrade(siswa);
+
+    boolean berhasil = siswaDAO.update(siswa);
+
+    if (berhasil) {
+        updateRankingPerKelas(siswa.getIdKelas());
     }
 
-    public boolean hapusSiswa(String idSiswa, int idKelas) {
-        boolean berhasil = siswaDAO.delete(idSiswa);
-        if (berhasil) updateRankingPerKelas(idKelas);
-        return berhasil;
+    return berhasil;
+}
+
+// =========================
+// HAPUS SISWA
+// =========================
+public boolean hapusSiswa(String idSiswa, int idKelas) {
+
+    boolean berhasil = siswaDAO.delete(idSiswa);
+
+    if (berhasil) {
+        updateRankingPerKelas(idKelas);
     }
 
-    public List<Siswa> getAllSiswa() {
-        return siswaDAO.getAll();
-    }
+    return berhasil;
+}
 
-    public List<Siswa> getByKelas(int idKelas) {
-        return siswaDAO.getByKelas(idKelas);
-    }
+// =========================
+// GET ALL SISWA
+// =========================
+public List<Siswa> getAllSiswa() {
+    return siswaDAO.getAll();
+}
 
-    public List<Siswa> cariSiswa(String keyword) {
-        return siswaDAO.search(keyword);
-    }
+// =========================
+// GET BY KELAS
+// =========================
+public List<Siswa> getByKelas(int idKelas) {
+    return siswaDAO.getByKelas(idKelas);
+}
 
-    public List<Siswa> sortNilai() {
-        return siswaDAO.sortByNilai();
-    }
+// =========================
+// CARI SISWA
+// =========================
+public List<Siswa> cariSiswa(String keyword) {
+    return siswaDAO.search(keyword);
+}
 
-    public void updateRankingPerKelas(int idKelas) {
-        List<Siswa> list = siswaDAO.getByKelas(idKelas);
-        RankingHelper.urutkanRanking(list);
-        for (Siswa s : list) {
-            siswaDAO.update(s);
-        }
+// =========================
+// SORT NILAI
+// =========================
+public List<Siswa> sortNilai() {
+    return siswaDAO.sortByNilai();
+}
+
+// =========================
+// HITUNG NILAI AKHIR & GRADE
+// =========================
+private void hitungNilaiDanGrade(Siswa siswa) {
+
+    double nilaiAkhir =
+            GradeHelper.hitungNilaiAkhir(
+                    siswa.getNilaiTugas(),
+                    siswa.getNilaiUTS(),
+                    siswa.getNilaiUAS()
+            );
+
+    siswa.setNilaiAkhir(nilaiAkhir);
+
+    siswa.setGrade(
+            GradeHelper.hitungGrade(nilaiAkhir)
+    );
+}
+
+// =========================
+// UPDATE RANKING PER KELAS
+// =========================
+public void updateRankingPerKelas(int idKelas) {
+
+    List<Siswa> list =
+            siswaDAO.getByKelas(idKelas);
+
+    RankingHelper.urutkanRanking(list);
+
+    for (Siswa siswa : list) {
+        siswaDAO.update(siswa);
     }
+}
+
+
 }

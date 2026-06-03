@@ -50,16 +50,10 @@ public class About extends JFrame {
         appName.setForeground(Color.WHITE);
         appName.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel version = new JLabel("Versi 2.0 — 2026");
-        version.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        version.setForeground(new Color(200, 210, 255));
-        version.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         header.add(icon);
         header.add(Box.createVerticalStrut(10));
         header.add(appName);
         header.add(Box.createVerticalStrut(4));
-        header.add(version);
 
         // Info cards
         JPanel body = new JPanel();
@@ -67,11 +61,11 @@ public class About extends JFrame {
         body.setBackground(BG);
         body.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        body.add(infoCard("🛠  Teknologi", "Java Swing  •  MVC Pattern  •  DAO Pattern\nMySQL Database  •  OOP Principles"));
+        body.add(infoCard("Teknologi", "Java Swing  •  MVC Pattern  •  DAO Pattern\nMySQL Database  •  OOP Principles"));
         body.add(Box.createVerticalStrut(12));
-        body.add(infoCard("✨  Fitur Utama", "CRUD Siswa & Kelas\nHitung Nilai Akhir & Grade Otomatis\nRanking Per Kelas\nStatistik Nilai Per Kelas\nSearch & Sort Data"));
+        body.add(infoCard("Fitur Utama", "CRUD Siswa & Kelas\nHitung Nilai Akhir & Grade Otomatis\nRanking Per Kelas\nStatistik Nilai Per Kelas\nSearch & Sort Data"));
         body.add(Box.createVerticalStrut(12));
-        body.add(infoCard("👤  Developer", "Ajrun Ramadhan\nSistem Informasi — 2026"));
+        body.add(infoCard("Developer", "Ajrun Ramadhan\nSistem Informasi — 2026"));
 
         // Close button
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER));

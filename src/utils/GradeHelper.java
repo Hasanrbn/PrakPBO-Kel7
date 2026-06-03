@@ -4,13 +4,14 @@ public class GradeHelper {
 
     // Hitung nilai akhir
     public static double hitungNilaiAkhir(
-            double tugas,
-            double ujian
-    ) {
+        double tugas,
+        double uts,
+        double uas) {
 
-        return (tugas * 0.4) + (ujian * 0.6);
+    return (tugas * 0.3)
+         + (uts * 0.3)
+         + (uas * 0.4);
     }
-
     // Hitung grade
     public static String hitungGrade(double nilaiAkhir) {
 

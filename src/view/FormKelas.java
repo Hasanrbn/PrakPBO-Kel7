@@ -57,7 +57,7 @@ public class FormKelas extends JFrame {
         header.setBackground(PRIMARY);
         header.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        JLabel lblTitle = new JLabel("🏫  Manajemen Kelas");
+        JLabel lblTitle = new JLabel("Manajemen Kelas");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblTitle.setForeground(Color.WHITE);
 
@@ -108,10 +108,10 @@ public class FormKelas extends JFrame {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         btnPanel.setOpaque(false);
 
-        btnTambah    = makeBtn("＋ Tambah",   SUCCESS);
-        btnEdit      = makeBtn("✎ Edit",      WARNING);
-        btnHapus     = makeBtn("✕ Hapus",     DANGER);
-        btnBersihkan = makeBtn("↺ Reset",     NEUTRAL);
+        btnTambah    = makeBtn("Tambah", SUCCESS);
+        btnEdit      = makeBtn("Edit", WARNING);
+        btnHapus     = makeBtn("Hapus", DANGER);
+        btnBersihkan = makeBtn("Reset", NEUTRAL);
 
         btnPanel.add(btnTambah);
         btnPanel.add(btnEdit);
@@ -254,9 +254,9 @@ public class FormKelas extends JFrame {
     private JButton makeBtn(String text, Color color) {
         JButton b = new JButton(text);
         b.setBackground(color);
-        b.setForeground(Color.WHITE);
+        b.setForeground(Color.BLACK);
         b.setFocusPainted(false);
-        b.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        b.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(color.darker(), 1),

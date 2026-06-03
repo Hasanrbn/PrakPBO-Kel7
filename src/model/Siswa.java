@@ -11,7 +11,8 @@ public class Siswa {
     private String namaKelas;
 
     private double nilaiTugas;
-    private double nilaiUjian;
+    private double nilaiUTS;
+    private double nilaiUAS;
     private double nilaiAkhir;
 
     private String grade;
@@ -24,7 +25,7 @@ public class Siswa {
     // Constructor lengkap
     public Siswa(String idSiswa, String namaSiswa, String jenisKelamin,
                   String alamat, int idKelas, String namaKelas,
-                  double nilaiTugas, double nilaiUjian,
+                  double nilaiTugas, double nilaiUTS, double nilaiUAS,
                   double nilaiAkhir, String grade, int ranking) {
 
         this.idSiswa = idSiswa;
@@ -34,7 +35,8 @@ public class Siswa {
         this.idKelas = idKelas;
         this.namaKelas = namaKelas;
         this.nilaiTugas = nilaiTugas;
-        this.nilaiUjian = nilaiUjian;
+        this.nilaiUTS = nilaiUTS;
+        this.nilaiUAS = nilaiUAS;
         this.nilaiAkhir = nilaiAkhir;
         this.grade = grade;
         this.ranking = ranking;
@@ -98,13 +100,21 @@ public class Siswa {
         this.nilaiTugas = nilaiTugas;
     }
 
-    public double getNilaiUjian() {
-        return nilaiUjian;
+    public double getNilaiUTS() {
+        return nilaiUTS;
     }
 
-    public void setNilaiUjian(double nilaiUjian) {
-        this.nilaiUjian = nilaiUjian;
+    public void setNilaiUTS(double nilaiUTS) {
+        this.nilaiUTS = nilaiUTS;
     }
+
+    public double getNilaiUAS() {
+        return nilaiUAS;
+    }
+
+    public void setNilaiUAS(double nilaiUAS) {
+        this.nilaiUAS = nilaiUAS;
+    }   
 
     public double getNilaiAkhir() {
         return nilaiAkhir;
