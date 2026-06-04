@@ -1,5 +1,7 @@
 package view;
 
+import controller.SiswaController;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -26,6 +28,14 @@ public class MainMenu extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setBackground(BG);
         initComponent();
+
+        // Shutdown executor thread pool saat window ditutup
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                SiswaController.shutdownExecutor();
+            }
+        });
     }
 
     private void initComponent() {
@@ -56,8 +66,8 @@ public class MainMenu extends JFrame {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(Color.WHITE);
 
-        JLabel lblSub = new JLabel("Java OOP  •  MVC Pattern  •  DAO  •  MySQL  •  Desktop Application");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        JLabel lblSub = new JLabel("Java OOP  •  MVC  •  DAO  •  MySQL  •  Multithreading (SwingWorker + ExecutorService)");
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblSub.setForeground(new Color(210, 220, 255));
 
         hText.add(lblTitle);
@@ -77,10 +87,10 @@ public class MainMenu extends JFrame {
         grid.setBackground(BG);
         grid.setBorder(new EmptyBorder(22, 25, 22, 25));
 
-        btnSiswa    = menuCard("📚","Data Siswa", "Kelola data, nilai & peringkat siswa", PRIMARY);
-        btnKelas    = menuCard("🏫", "Data Kelas", "Tambah, edit & hapus data kelas", PURPLE);
-        btnStatistik= menuCard("📊", "Statistik Nilai", "Lihat ringkasan statistik nilai per kelas", EMERALD);
-        btnAbout    = menuCard("ℹ", "Tentang Aplikasi", "Informasi aplikasi dan developer", AMBER);
+        btnSiswa     = menuCard("📚", "Data Siswa",       "Kelola data, nilai & peringkat siswa",         PRIMARY);
+        btnKelas     = menuCard("🏫", "Data Kelas",       "Tambah, edit & hapus data kelas",              PURPLE);
+        btnStatistik = menuCard("📊", "Statistik Nilai",  "Lihat ringkasan statistik nilai per kelas",    EMERALD);
+        btnAbout     = menuCard("ℹ",  "Tentang Aplikasi", "Informasi aplikasi dan developer",             AMBER);
 
         grid.add(btnSiswa);
         grid.add(btnKelas);
@@ -97,14 +107,14 @@ public class MainMenu extends JFrame {
             new EmptyBorder(12, 25, 12, 25)
         ));
 
-        JLabel copy = new JLabel("© 2026 Sistem Akademik Sekolah");
+        JLabel copy = new JLabel("© 2026 Sistem Akademik Sekolah  •  Menggunakan Multithreading");
         copy.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         copy.setForeground(MUTED);
 
         btnExit = new JButton("⏻  Keluar");
         btnExit.setBackground(DANGER);
-        btnExit.setForeground(Color.BLACK);
-        btnExit.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        btnExit.setForeground(Color.WHITE);
+        btnExit.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnExit.setFocusPainted(false);
         btnExit.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnExit.setBorder(BorderFactory.createCompoundBorder(
@@ -129,7 +139,10 @@ public class MainMenu extends JFrame {
         btnAbout.addActionListener(e     -> new About().setVisible(true));
         btnExit.addActionListener(e      -> {
             int opt = JOptionPane.showConfirmDialog(this, "Yakin ingin keluar?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
-            if (opt == JOptionPane.YES_OPTION) System.exit(0);
+            if (opt == JOptionPane.YES_OPTION) {
+                SiswaController.shutdownExecutor();
+                System.exit(0);
+            }
         });
     }
 
@@ -156,7 +169,6 @@ public class MainMenu extends JFrame {
             new EmptyBorder(22, 22, 22, 22)
         ));
 
-        // Left accent bar
         JPanel accent = new JPanel();
         accent.setBackground(color);
         accent.setPreferredSize(new Dimension(5, 0));

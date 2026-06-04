@@ -61,11 +61,11 @@ public class About extends JFrame {
         body.setBackground(BG);
         body.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        body.add(infoCard("Teknologi", "Java Swing  •  MVC Pattern  •  DAO Pattern\nMySQL Database  •  OOP Principles"));
+        body.add(infoCard("🛠  Teknologi", "Java Swing  •  MVC Pattern  •  DAO Pattern\nMySQL Database  •  OOP Principles"));
         body.add(Box.createVerticalStrut(12));
-        body.add(infoCard("Fitur Utama", "CRUD Siswa & Kelas\nHitung Nilai Akhir & Grade Otomatis\nRanking Per Kelas\nStatistik Nilai Per Kelas\nSearch & Sort Data"));
+        body.add(infoCard("✨  Fitur Utama", "CRUD Siswa & Kelas\nHitung Nilai Akhir & Grade Otomatis\nRanking Per Kelas\nStatistik Nilai Per Kelas\nSearch & Sort Data"));
         body.add(Box.createVerticalStrut(12));
-        body.add(infoCard("Developer", "Ajrun Ramadhan\nSistem Informasi — 2026"));
+        body.add(infoCard("👤  Developer", "Ajrun Ramadhan\nSistem Informasi — 2026"));
 
         // Close button
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER));

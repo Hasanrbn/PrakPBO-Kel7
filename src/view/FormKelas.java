@@ -2,6 +2,7 @@ package view;
 
 import controller.KelasController;
 import model.Kelas;
+import utils.DatabaseWorker;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -24,6 +25,7 @@ public class FormKelas extends JFrame {
     private JTable table;
     private DefaultTableModel model;
     private KelasController controller;
+    private JLabel lblStatus;
 
     // === WARNA ===
     private final Color PRIMARY    = new Color(67, 97, 238);
@@ -40,7 +42,7 @@ public class FormKelas extends JFrame {
     public FormKelas() {
         controller = new KelasController();
         setTitle("Manajemen Kelas");
-        setSize(750, 550);
+        setSize(750, 580);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setBackground(BG);
@@ -57,7 +59,7 @@ public class FormKelas extends JFrame {
         header.setBackground(PRIMARY);
         header.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        JLabel lblTitle = new JLabel("Manajemen Kelas");
+        JLabel lblTitle = new JLabel("🏫  Manajemen Kelas");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         lblTitle.setForeground(Color.WHITE);
 
@@ -85,14 +87,12 @@ public class FormKelas extends JFrame {
         gbc.insets = new Insets(6, 8, 6, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // ID (hidden, for edit)
         txtIdKelas = new JTextField();
         txtIdKelas.setVisible(false);
 
         txtNamaKelas = createStyledField("Contoh: X RPL 1");
         txtWaliKelas  = createStyledField("Contoh: Budi Santoso");
 
-        // Row 0: Nama Kelas + Wali Kelas
         gbc.gridx=0; gbc.gridy=0; gbc.weightx=0;
         formCard.add(createLabel("Nama Kelas"), gbc);
         gbc.gridx=1; gbc.weightx=1;
@@ -103,15 +103,14 @@ public class FormKelas extends JFrame {
         gbc.gridx=3; gbc.weightx=1;
         formCard.add(txtWaliKelas, gbc);
 
-        // Row 1: Buttons
         gbc.gridx=0; gbc.gridy=1; gbc.gridwidth=4; gbc.weightx=1;
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         btnPanel.setOpaque(false);
 
-        btnTambah    = makeBtn("Tambah", SUCCESS);
-        btnEdit      = makeBtn("Edit", WARNING);
-        btnHapus     = makeBtn("Hapus", DANGER);
-        btnBersihkan = makeBtn("Reset", NEUTRAL);
+        btnTambah    = makeBtn("＋ Tambah",   SUCCESS);
+        btnEdit      = makeBtn("✎ Edit",      WARNING);
+        btnHapus     = makeBtn("✕ Hapus",     DANGER);
+        btnBersihkan = makeBtn("↺ Reset",     NEUTRAL);
 
         btnPanel.add(btnTambah);
         btnPanel.add(btnEdit);
@@ -143,6 +142,15 @@ public class FormKelas extends JFrame {
         tableWrap.add(tableHeader, BorderLayout.NORTH);
         tableWrap.add(scroll, BorderLayout.CENTER);
 
+        // === STATUS BAR ===
+        JPanel statusBar = new JPanel(new BorderLayout());
+        statusBar.setBackground(new Color(241, 245, 249));
+        statusBar.setBorder(new EmptyBorder(6, 20, 6, 20));
+        lblStatus = new JLabel("Siap");
+        lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblStatus.setForeground(TEXT_MUTED);
+        statusBar.add(lblStatus, BorderLayout.WEST);
+
         // === ASSEMBLE ===
         JPanel topSection = new JPanel(new BorderLayout());
         topSection.add(header, BorderLayout.NORTH);
@@ -150,6 +158,7 @@ public class FormKelas extends JFrame {
 
         mainPanel.add(topSection, BorderLayout.NORTH);
         mainPanel.add(tableWrap, BorderLayout.CENTER);
+        mainPanel.add(statusBar, BorderLayout.SOUTH);
         add(mainPanel);
 
         // === ACTIONS ===
@@ -161,6 +170,9 @@ public class FormKelas extends JFrame {
         table.getSelectionModel().addListSelectionListener(e -> pilihData());
     }
 
+    // =====================
+    // MULTITHREADING: tambahKelas
+    // =====================
     private void tambahKelas() {
         String nama = txtNamaKelas.getText().trim();
         String wali = txtWaliKelas.getText().trim();
@@ -168,14 +180,33 @@ public class FormKelas extends JFrame {
         if (wali.isEmpty()) { showWarn("Wali Kelas tidak boleh kosong!"); txtWaliKelas.requestFocus(); return; }
 
         Kelas k = new Kelas(0, nama, wali);
-        if (controller.tambahKelas(k)) {
-            showInfo("Kelas berhasil ditambahkan!");
-            tampilData(); clearForm();
-        } else {
-            showError("Gagal menambahkan kelas.");
-        }
+        setStatus("Menyimpan kelas...", TEXT_MUTED);
+        setButtonsEnabled(false);
+
+        new DatabaseWorker<Boolean>(
+            () -> controller.tambahKelas(k),
+            berhasil -> {
+                setButtonsEnabled(true);
+                if (berhasil) {
+                    showInfo("Kelas berhasil ditambahkan!");
+                    setStatus("Kelas " + nama + " berhasil ditambahkan", SUCCESS);
+                    tampilData(); clearForm();
+                } else {
+                    showError("Gagal menambahkan kelas.");
+                    setStatus("Gagal tambah kelas", DANGER);
+                }
+            },
+            err -> {
+                setButtonsEnabled(true);
+                showError("Error: " + err.getMessage());
+                setStatus("Error: " + err.getMessage(), DANGER);
+            }
+        ).execute();
     }
 
+    // =====================
+    // MULTITHREADING: editKelas
+    // =====================
     private void editKelas() {
         if (txtIdKelas.getText().isEmpty()) { showWarn("Pilih kelas dari tabel terlebih dahulu!"); return; }
         String nama = txtNamaKelas.getText().trim();
@@ -184,14 +215,33 @@ public class FormKelas extends JFrame {
         if (wali.isEmpty()) { showWarn("Wali Kelas tidak boleh kosong!"); return; }
 
         Kelas k = new Kelas(Integer.parseInt(txtIdKelas.getText()), nama, wali);
-        if (controller.updateKelas(k)) {
-            showInfo("Kelas berhasil diperbarui!");
-            tampilData(); clearForm();
-        } else {
-            showError("Gagal memperbarui kelas.");
-        }
+        setStatus("Memperbarui kelas...", TEXT_MUTED);
+        setButtonsEnabled(false);
+
+        new DatabaseWorker<Boolean>(
+            () -> controller.updateKelas(k),
+            berhasil -> {
+                setButtonsEnabled(true);
+                if (berhasil) {
+                    showInfo("Kelas berhasil diperbarui!");
+                    setStatus("Kelas " + nama + " berhasil diperbarui", SUCCESS);
+                    tampilData(); clearForm();
+                } else {
+                    showError("Gagal memperbarui kelas.");
+                    setStatus("Gagal update kelas", DANGER);
+                }
+            },
+            err -> {
+                setButtonsEnabled(true);
+                showError("Error: " + err.getMessage());
+                setStatus("Error: " + err.getMessage(), DANGER);
+            }
+        ).execute();
     }
 
+    // =====================
+    // MULTITHREADING: hapusKelas
+    // =====================
     private void hapusKelas() {
         if (txtIdKelas.getText().isEmpty()) { showWarn("Pilih kelas dari tabel terlebih dahulu!"); return; }
         int id = Integer.parseInt(txtIdKelas.getText());
@@ -200,19 +250,46 @@ public class FormKelas extends JFrame {
             "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (opt != JOptionPane.YES_OPTION) return;
 
-        if (controller.hapusKelas(id)) {
-            showInfo("Kelas berhasil dihapus!");
-            tampilData(); clearForm();
-        } else {
-            showError("Gagal menghapus kelas.\nPastikan tidak ada siswa yang terdaftar di kelas ini.");
-        }
+        setStatus("Menghapus kelas...", TEXT_MUTED);
+        setButtonsEnabled(false);
+
+        new DatabaseWorker<Boolean>(
+            () -> controller.hapusKelas(id),
+            berhasil -> {
+                setButtonsEnabled(true);
+                if (berhasil) {
+                    showInfo("Kelas berhasil dihapus!");
+                    setStatus("Kelas berhasil dihapus", SUCCESS);
+                    tampilData(); clearForm();
+                } else {
+                    showError("Gagal menghapus kelas.\nPastikan tidak ada siswa yang terdaftar di kelas ini.");
+                    setStatus("Gagal hapus kelas (mungkin masih ada siswa)", DANGER);
+                }
+            },
+            err -> {
+                setButtonsEnabled(true);
+                showError("Error: " + err.getMessage());
+                setStatus("Error: " + err.getMessage(), DANGER);
+            }
+        ).execute();
     }
 
+    // =====================
+    // MULTITHREADING: tampilData
+    // =====================
     private void tampilData() {
-        model.setRowCount(0);
-        for (Kelas k : controller.getAllKelas()) {
-            model.addRow(new Object[]{k.getIdKelas(), k.getNamaKelas(), k.getWaliKelas()});
-        }
+        setStatus("Memuat data kelas...", TEXT_MUTED);
+
+        new DatabaseWorker<List<Kelas>>(
+            () -> controller.getAllKelas(),
+            kelasList -> {
+                model.setRowCount(0);
+                for (Kelas k : kelasList)
+                    model.addRow(new Object[]{k.getIdKelas(), k.getNamaKelas(), k.getWaliKelas()});
+                setStatus("Menampilkan " + kelasList.size() + " kelas", SUCCESS);
+            },
+            err -> setStatus("Gagal memuat data: " + err.getMessage(), DANGER)
+        ).execute();
     }
 
     private void pilihData() {
@@ -229,6 +306,17 @@ public class FormKelas extends JFrame {
         txtNamaKelas.setText("");
         txtWaliKelas.setText("");
         table.clearSelection();
+    }
+
+    private void setStatus(String msg, Color color) {
+        lblStatus.setText(msg);
+        lblStatus.setForeground(color);
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        btnTambah.setEnabled(enabled);
+        btnEdit.setEnabled(enabled);
+        btnHapus.setEnabled(enabled);
     }
 
     // === HELPERS ===
@@ -254,9 +342,9 @@ public class FormKelas extends JFrame {
     private JButton makeBtn(String text, Color color) {
         JButton b = new JButton(text);
         b.setBackground(color);
-        b.setForeground(Color.BLACK);
+        b.setForeground(Color.WHITE);
         b.setFocusPainted(false);
-        b.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        b.setFont(new Font("Segoe UI", Font.BOLD, 13));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(color.darker(), 1),

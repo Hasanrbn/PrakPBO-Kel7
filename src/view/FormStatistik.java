@@ -2,6 +2,7 @@ package view;
 
 import controller.StatistikController;
 import model.Statistik;
+import utils.DatabaseWorker;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -15,9 +16,12 @@ public class FormStatistik extends JFrame {
     private JTable table;
     private DefaultTableModel model;
     private StatistikController controller;
+    private JLabel lblStatus;
+    private JProgressBar progressBar;
 
     private final Color PRIMARY    = new Color(67, 97, 238);
     private final Color SUCCESS    = new Color(34, 197, 94);
+    private final Color DANGER     = new Color(239, 68, 68);
     private final Color BG         = new Color(248, 250, 252);
     private final Color CARD       = Color.WHITE;
     private final Color TEXT_DARK  = new Color(30, 41, 59);
@@ -27,7 +31,7 @@ public class FormStatistik extends JFrame {
     public FormStatistik() {
         controller = new StatistikController();
         setTitle("Statistik Nilai Per Kelas");
-        setSize(800, 520);
+        setSize(800, 560);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         initComponent();
@@ -40,14 +44,14 @@ public class FormStatistik extends JFrame {
 
         // Header
         JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(new Color(16, 185, 129)); // emerald
+        header.setBackground(new Color(16, 185, 129));
         header.setBorder(new EmptyBorder(20, 30, 20, 30));
 
         JPanel hText = new JPanel();
         hText.setLayout(new BoxLayout(hText, BoxLayout.Y_AXIS));
         hText.setOpaque(false);
 
-        JLabel lblTitle = new JLabel("Statistik Nilai Siswa");
+        JLabel lblTitle = new JLabel("📊  Statistik Nilai Siswa");
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(Color.WHITE);
 
@@ -60,8 +64,7 @@ public class FormStatistik extends JFrame {
         hText.add(lblSub);
         header.add(hText, BorderLayout.WEST);
 
-        JButton btnRefresh = makeBtn("Refresh", PRIMARY);
-        btnRefresh.setForeground(Color.BLACK);
+        JButton btnRefresh = makeBtn("⟳ Refresh", PRIMARY);
         btnRefresh.addActionListener(e -> { model.setRowCount(0); tampilData(); });
         header.add(btnRefresh, BorderLayout.EAST);
 
@@ -89,14 +92,22 @@ public class FormStatistik extends JFrame {
         tableCard.add(tableTitle, BorderLayout.NORTH);
         tableCard.add(scroll, BorderLayout.CENTER);
 
-        // Footer note
-        JPanel footer = new JPanel(new BorderLayout());
+        // Footer (status + progress bar)
+        JPanel footer = new JPanel(new BorderLayout(10, 0));
         footer.setBackground(new Color(241, 245, 249));
-        footer.setBorder(new EmptyBorder(10, 20, 10, 20));
-        JLabel note = new JLabel("ℹ  Nilai Akhir = (Nilai Tugas × 40%) + (Nilai Ujian × 60%)  |  Grade A≥85  B≥75  C≥65  D≥50  E<50");
-        note.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        note.setForeground(TEXT_MUTED);
-        footer.add(note);
+        footer.setBorder(new EmptyBorder(8, 20, 8, 20));
+
+        lblStatus = new JLabel("Memuat statistik...");
+        lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblStatus.setForeground(TEXT_MUTED);
+
+        progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        progressBar.setPreferredSize(new Dimension(120, 14));
+        progressBar.setVisible(false);
+
+        footer.add(lblStatus, BorderLayout.WEST);
+        footer.add(progressBar, BorderLayout.EAST);
 
         mainPanel.add(header, BorderLayout.NORTH);
         mainPanel.add(tableCard, BorderLayout.CENTER);
@@ -104,17 +115,41 @@ public class FormStatistik extends JFrame {
         add(mainPanel);
     }
 
+    // =====================
+    // MULTITHREADING: tampilData
+    // Query statistik dijalankan di background thread.
+    // Progress bar indeterminate ditampilkan selama loading.
+    // =====================
     private void tampilData() {
-        List<Statistik> list = controller.getStatistik();
-        for (Statistik s : list) {
-            model.addRow(new Object[]{
-                s.getNamaKelas(),
-                s.getJumlahSiswa() + " siswa",
-                String.format("%.2f", s.getRataRata()),
-                String.format("%.2f", s.getNilaiTertinggi()),
-                String.format("%.2f", s.getNilaiTerendah())
-            });
-        }
+        setStatus("Memuat statistik...", TEXT_MUTED);
+        progressBar.setVisible(true);
+
+        new DatabaseWorker<List<Statistik>>(
+            () -> controller.getStatistik(),   // background thread
+            statList -> {                       // EDT
+                progressBar.setVisible(false);
+                model.setRowCount(0);
+                for (Statistik s : statList) {
+                    model.addRow(new Object[]{
+                        s.getNamaKelas(),
+                        s.getJumlahSiswa() + " siswa",
+                        String.format("%.2f", s.getRataRata()),
+                        String.format("%.2f", s.getNilaiTertinggi()),
+                        String.format("%.2f", s.getNilaiTerendah())
+                    });
+                }
+                setStatus("Statistik dimuat: " + statList.size() + " kelas  [Thread: EDT]", SUCCESS);
+            },
+            err -> {
+                progressBar.setVisible(false);
+                setStatus("Gagal memuat statistik: " + err.getMessage(), DANGER);
+            }
+        ).execute();
+    }
+
+    private void setStatus(String msg, Color color) {
+        lblStatus.setText(msg);
+        lblStatus.setForeground(color);
     }
 
     private void styleTable(JTable t) {
@@ -129,24 +164,6 @@ public class FormStatistik extends JFrame {
         t.getTableHeader().setForeground(TEXT_MUTED);
         t.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(16,185,129)));
         t.getTableHeader().setPreferredSize(new Dimension(0, 44));
-
-        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
-        center.setHorizontalAlignment(SwingConstants.CENTER);
-        for (int i = 1; i < 5; i++) t.getColumnModel().getColumn(i).setCellRenderer(center);
-
-        // Highlight rata-rata column
-        t.getColumnModel().getColumn(2).setCellRenderer(new DefaultTableCellRenderer() {
-            public Component getTableCellRendererComponent(JTable tbl, Object val,
-                    boolean sel, boolean foc, int row, int col) {
-                Component c = super.getTableCellRendererComponent(tbl, val, sel, foc, row, col);
-                if (!sel) {
-                    c.setForeground(new Color(16, 185, 129));
-                    setFont(getFont().deriveFont(Font.BOLD));
-                }
-                ((JLabel)c).setHorizontalAlignment(SwingConstants.CENTER);
-                return c;
-            }
-        });
 
         t.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(JTable tbl, Object val,

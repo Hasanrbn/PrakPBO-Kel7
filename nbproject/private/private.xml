@@ -3,13 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/User/Downloads/SistemPenggelolaanNilaiSiswa_fixed/SistemPenggelolaanNilaiSiswa_fixed/src/view/About.java</file>
-            <file>file:/C:/Users/User/Downloads/SistemPenggelolaanNilaiSiswa_fixed/SistemPenggelolaanNilaiSiswa_fixed/src/view/MainMenu.java</file>
-            <file>file:/C:/Users/User/Downloads/SistemPenggelolaanNilaiSiswa_fixed/SistemPenggelolaanNilaiSiswa_fixed/src/view/FormStatistik.java</file>
-            <file>file:/C:/Users/User/Downloads/SistemPenggelolaanNilaiSiswa_fixed/SistemPenggelolaanNilaiSiswa_fixed/src/Main.java</file>
-            <file>file:/C:/Users/User/Downloads/SistemPenggelolaanNilaiSiswa_fixed/SistemPenggelolaanNilaiSiswa_fixed/src/view/FormSiswa.java</file>
-            <file>file:/C:/Users/User/Downloads/SistemPenggelolaanNilaiSiswa_fixed/SistemPenggelolaanNilaiSiswa_fixed/src/view/FormKelas.java</file>
-            <file>file:/C:/Users/User/Downloads/SistemPenggelolaanNilaiSiswa_fixed/SistemPenggelolaanNilaiSiswa_fixed/src/model/Statistik.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/view/FormKelas.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/dao/StatistikDAO.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/Main.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/utils/GradeHelper.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/view/About.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/dao/KelasDAO.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/controller/StatistikController.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/controller/KelasController.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/view/FormStatistik.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/model/Siswa.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/view/MainMenu.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/dao/SiswaDAO.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/view/FormSiswa.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/database/Koneksi.java</file>
+            <file>file:/D:/PrakPBO/SistemPenggelolaanNilaiSiswa/src/controller/SiswaController.java</file>
         </group>
     </open-files>
 </project-private>

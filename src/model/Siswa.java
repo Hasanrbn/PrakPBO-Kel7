@@ -25,7 +25,7 @@ public class Siswa {
     // Constructor lengkap
     public Siswa(String idSiswa, String namaSiswa, String jenisKelamin,
                   String alamat, int idKelas, String namaKelas,
-                  double nilaiTugas, double nilaiUTS, double nilaiUAS,
+                  double nilaiTugas, double nilaiUjian,
                   double nilaiAkhir, String grade, int ranking) {
 
         this.idSiswa = idSiswa;

@@ -23,26 +23,42 @@ public boolean insert(Siswa siswa) {
     String sql =
             "INSERT INTO siswa VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try {
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
 
         ps.setString(1, siswa.getIdSiswa());
         ps.setString(2, siswa.getNamaSiswa());
         ps.setString(3, siswa.getJenisKelamin());
         ps.setString(4, siswa.getAlamat());
+
         ps.setInt(5, siswa.getIdKelas());
+
         ps.setDouble(6, siswa.getNilaiTugas());
         ps.setDouble(7, siswa.getNilaiUTS());
         ps.setDouble(8, siswa.getNilaiUAS());
+
         ps.setDouble(9, siswa.getNilaiAkhir());
+
         ps.setString(10, siswa.getGrade());
+
         ps.setInt(11, siswa.getRanking());
-        ps.setTimestamp(12, new Timestamp(System.currentTimeMillis()));
+
+        ps.setTimestamp(
+                12,
+                new Timestamp(
+                        System.currentTimeMillis()
+                )
+        );
 
         return ps.executeUpdate() > 0;
 
     } catch (SQLException e) {
         e.printStackTrace();
-        System.out.println("Insert Gagal : " + e.getMessage());
+        System.out.println(
+                "Insert Gagal : " + e.getMessage()
+        );
         return false;
     }
 }
@@ -52,7 +68,8 @@ public boolean insert(Siswa siswa) {
 // =========================
 public List<Siswa> getAll() {
 
-    List<Siswa> list = new ArrayList<>();
+    List<Siswa> list =
+            new ArrayList<>();
 
     String sql =
             "SELECT s.*, k.nama_kelas " +
@@ -62,15 +79,27 @@ public List<Siswa> getAll() {
             "ORDER BY s.id_kelas ASC, " +
             "s.ranking_kelas ASC";
 
-    try (
-        Statement st = conn.createStatement();
-        ResultSet rs = st.executeQuery(sql)
-    ) {
+    try {
+
+        Statement st =
+                conn.createStatement();
+
+        ResultSet rs =
+                st.executeQuery(sql);
+
         while (rs.next()) {
-            list.add(mapRow(rs));
+
+            list.add(
+                    mapRow(rs)
+            );
         }
+
     } catch (SQLException e) {
-        System.out.println("Tampil Data Gagal : " + e.getMessage());
+
+        System.out.println(
+                "Tampil Data Gagal : "
+                        + e.getMessage()
+        );
     }
 
     return list;
@@ -79,9 +108,12 @@ public List<Siswa> getAll() {
 // =========================
 // FILTER BERDASARKAN KELAS
 // =========================
-public List<Siswa> getByKelas(int idKelas) {
+public List<Siswa> getByKelas(
+        int idKelas
+) {
 
-    List<Siswa> list = new ArrayList<>();
+    List<Siswa> list =
+            new ArrayList<>();
 
     String sql =
             "SELECT s.*, k.nama_kelas " +
@@ -91,18 +123,28 @@ public List<Siswa> getByKelas(int idKelas) {
             "WHERE s.id_kelas=? " +
             "ORDER BY ranking_kelas ASC";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try {
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
 
         ps.setInt(1, idKelas);
 
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                list.add(mapRow(rs));
-            }
+        ResultSet rs =
+                ps.executeQuery();
+
+        while (rs.next()) {
+
+            list.add(
+                    mapRow(rs)
+            );
         }
 
     } catch (SQLException e) {
-        System.out.println("Filter Kelas Gagal : " + e.getMessage());
+
+        System.out.println(
+                e.getMessage()
+        );
     }
 
     return list;
@@ -111,7 +153,9 @@ public List<Siswa> getByKelas(int idKelas) {
 // =========================
 // UPDATE DATA
 // =========================
-public boolean update(Siswa siswa) {
+public boolean update(
+        Siswa siswa
+) {
 
     String sql =
             "UPDATE siswa SET " +
@@ -127,24 +171,75 @@ public boolean update(Siswa siswa) {
             "ranking_kelas=? " +
             "WHERE id_siswa=?";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try {
 
-        ps.setString(1, siswa.getNamaSiswa());
-        ps.setString(2, siswa.getJenisKelamin());
-        ps.setString(3, siswa.getAlamat());
-        ps.setInt(4, siswa.getIdKelas());
-        ps.setDouble(5, siswa.getNilaiTugas());
-        ps.setDouble(6, siswa.getNilaiUTS());
-        ps.setDouble(7, siswa.getNilaiUAS());
-        ps.setDouble(8, siswa.getNilaiAkhir());
-        ps.setString(9, siswa.getGrade());
-        ps.setInt(10, siswa.getRanking());
-        ps.setString(11, siswa.getIdSiswa());
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ps.setString(
+                1,
+                siswa.getNamaSiswa()
+        );
+
+        ps.setString(
+                2,
+                siswa.getJenisKelamin()
+        );
+
+        ps.setString(
+                3,
+                siswa.getAlamat()
+        );
+
+        ps.setInt(
+                4,
+                siswa.getIdKelas()
+        );
+
+        ps.setDouble(
+                5,
+                siswa.getNilaiTugas()
+        );
+
+        ps.setDouble(
+                6,
+                siswa.getNilaiUTS()
+        );
+
+        ps.setDouble(
+                7,
+                siswa.getNilaiUAS()
+        );
+
+        ps.setDouble(
+                8,
+                siswa.getNilaiAkhir()
+        );
+
+        ps.setString(
+                9,
+                siswa.getGrade()
+        );
+
+        ps.setInt(
+                10,
+                siswa.getRanking()
+        );
+
+        ps.setString(
+                11,
+                siswa.getIdSiswa()
+        );
 
         return ps.executeUpdate() > 0;
 
     } catch (SQLException e) {
-        System.out.println("Update Gagal : " + e.getMessage());
+
+        System.out.println(
+                "Update Gagal : "
+                        + e.getMessage()
+        );
+
         return false;
     }
 }
@@ -152,19 +247,33 @@ public boolean update(Siswa siswa) {
 // =========================
 // DELETE DATA
 // =========================
-public boolean delete(String idSiswa) {
+public boolean delete(
+        String idSiswa
+) {
 
     String sql =
             "DELETE FROM siswa " +
             "WHERE id_siswa=?";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try {
 
-        ps.setString(1, idSiswa);
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ps.setString(
+                1,
+                idSiswa
+        );
+
         return ps.executeUpdate() > 0;
 
     } catch (SQLException e) {
-        System.out.println("Delete Gagal : " + e.getMessage());
+
+        System.out.println(
+                "Delete Gagal : "
+                        + e.getMessage()
+        );
+
         return false;
     }
 }
@@ -172,9 +281,12 @@ public boolean delete(String idSiswa) {
 // =========================
 // SEARCH DATA
 // =========================
-public List<Siswa> search(String keyword) {
+public List<Siswa> search(
+        String keyword
+) {
 
-    List<Siswa> list = new ArrayList<>();
+    List<Siswa> list =
+            new ArrayList<>();
 
     String sql =
             "SELECT s.*, k.nama_kelas " +
@@ -185,19 +297,37 @@ public List<Siswa> search(String keyword) {
             "OR s.id_siswa LIKE ? " +
             "ORDER BY ranking_kelas ASC";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try {
 
-        ps.setString(1, "%" + keyword + "%");
-        ps.setString(2, "%" + keyword + "%");
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
 
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                list.add(mapRow(rs));
-            }
+        ps.setString(
+                1,
+                "%" + keyword + "%"
+        );
+
+        ps.setString(
+                2,
+                "%" + keyword + "%"
+        );
+
+        ResultSet rs =
+                ps.executeQuery();
+
+        while (rs.next()) {
+
+            list.add(
+                    mapRow(rs)
+            );
         }
 
     } catch (SQLException e) {
-        System.out.println("Search Gagal : " + e.getMessage());
+
+        System.out.println(
+                "Search Gagal : "
+                        + e.getMessage()
+        );
     }
 
     return list;
@@ -208,7 +338,8 @@ public List<Siswa> search(String keyword) {
 // =========================
 public List<Siswa> sortByNilai() {
 
-    List<Siswa> list = new ArrayList<>();
+    List<Siswa> list =
+            new ArrayList<>();
 
     String sql =
             "SELECT s.*, k.nama_kelas " +
@@ -217,15 +348,27 @@ public List<Siswa> sortByNilai() {
             "ON s.id_kelas = k.id_kelas " +
             "ORDER BY s.nilai_akhir DESC";
 
-    try (
-        Statement st = conn.createStatement();
-        ResultSet rs = st.executeQuery(sql)
-    ) {
+    try {
+
+        Statement st =
+                conn.createStatement();
+
+        ResultSet rs =
+                st.executeQuery(sql);
+
         while (rs.next()) {
-            list.add(mapRow(rs));
+
+            list.add(
+                    mapRow(rs)
+            );
         }
+
     } catch (SQLException e) {
-        System.out.println("Sort Gagal : " + e.getMessage());
+
+        System.out.println(
+                "Sort Gagal : "
+                        + e.getMessage()
+        );
     }
 
     return list;
@@ -234,23 +377,32 @@ public List<Siswa> sortByNilai() {
 // =========================
 // CEK ID SUDAH ADA
 // =========================
-public boolean isIdExist(String idSiswa) {
+public boolean isIdExist(
+        String idSiswa
+) {
 
     String sql =
             "SELECT id_siswa " +
             "FROM siswa " +
             "WHERE id_siswa=?";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    try {
 
-        ps.setString(1, idSiswa);
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
 
-        try (ResultSet rs = ps.executeQuery()) {
-            return rs.next();
-        }
+        ps.setString(
+                1,
+                idSiswa
+        );
+
+        ResultSet rs =
+                ps.executeQuery();
+
+        return rs.next();
 
     } catch (SQLException e) {
-        System.out.println("Cek ID Gagal : " + e.getMessage());
+
         return false;
     }
 }
@@ -258,22 +410,60 @@ public boolean isIdExist(String idSiswa) {
 // =========================
 // MAPPING DATA
 // =========================
-private Siswa mapRow(ResultSet rs) throws SQLException {
+private Siswa mapRow(
+        ResultSet rs
+) throws SQLException {
 
-    Siswa s = new Siswa();
+    Siswa s =
+            new Siswa();
 
-    s.setIdSiswa(rs.getString("id_siswa"));
-    s.setNamaSiswa(rs.getString("nama_siswa"));
-    s.setJenisKelamin(rs.getString("jenis_kelamin"));
-    s.setAlamat(rs.getString("alamat"));
-    s.setIdKelas(rs.getInt("id_kelas"));
-    s.setNamaKelas(rs.getString("nama_kelas"));
-    s.setNilaiTugas(rs.getDouble("nilai_tugas"));
-    s.setNilaiUTS(rs.getDouble("nilai_uts"));
-    s.setNilaiUAS(rs.getDouble("nilai_uas"));
-    s.setNilaiAkhir(rs.getDouble("nilai_akhir"));
-    s.setGrade(rs.getString("grade"));
-    s.setRanking(rs.getInt("ranking_kelas"));
+    s.setIdSiswa(
+            rs.getString("id_siswa")
+    );
+
+    s.setNamaSiswa(
+            rs.getString("nama_siswa")
+    );
+
+    s.setJenisKelamin(
+            rs.getString("jenis_kelamin")
+    );
+
+    s.setAlamat(
+            rs.getString("alamat")
+    );
+
+    s.setIdKelas(
+            rs.getInt("id_kelas")
+    );
+
+    s.setNamaKelas(
+            rs.getString("nama_kelas")
+    );
+
+    s.setNilaiTugas(
+            rs.getDouble("nilai_tugas")
+    );
+
+    s.setNilaiUTS(
+            rs.getDouble("nilai_uts")
+    );
+
+    s.setNilaiUAS(
+            rs.getDouble("nilai_uas")
+    );
+
+    s.setNilaiAkhir(
+            rs.getDouble("nilai_akhir")
+    );
+
+    s.setGrade(
+            rs.getString("grade")
+    );
+
+    s.setRanking(
+            rs.getInt("ranking_kelas")
+    );
 
     return s;
 }

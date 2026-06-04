@@ -4,6 +4,7 @@ import controller.KelasController;
 import controller.SiswaController;
 import model.Kelas;
 import model.Siswa;
+import utils.DatabaseWorker;
 import utils.GradeHelper;
 
 import javax.swing.*;
@@ -17,7 +18,7 @@ public class FormSiswa extends JFrame {
 
     // === KOMPONEN ===
     private JTextField txtId, txtNama, txtAlamat, txtTugas, txtUTS, txtUAS, txtCari;
-    private JLabel lblNilaiAkhir, lblGrade;
+    private JLabel lblNilaiAkhir, lblGrade, lblStatus;
     private JComboBox<String> cbJK, cbKelas;
     private JButton btnTambah, btnEdit, btnHapus, btnCari, btnRefresh, btnSortNilai;
     private JTable table;
@@ -45,11 +46,16 @@ public class FormSiswa extends JFrame {
     private final Color GRADE_D    = new Color(249, 115, 22);
     private final Color GRADE_E    = new Color(239, 68, 68);
 
+    // Warna ranking
+    private final Color RANK_GOLD   = new Color(255, 193, 7);
+    private final Color RANK_SILVER = new Color(176, 190, 197);
+    private final Color RANK_BRONZE = new Color(188, 120, 56);
+    private final Color RANK_BG     = new Color(241, 245, 249);
+
     public FormSiswa() {
         controller = new SiswaController();
         setTitle("Data Siswa - Sistem Pengelolaan Nilai");
-        setSize(1280, 780);
-        setMinimumSize(new Dimension(900, 600));
+        setSize(1380, 780);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setBackground(BG);
@@ -67,99 +73,90 @@ public class FormSiswa extends JFrame {
         // =====================
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(PRIMARY);
-        header.setBorder(new EmptyBorder(18, 30, 18, 30));
+        header.setBorder(new EmptyBorder(20, 30, 20, 30));
 
         JPanel hLeft = new JPanel();
         hLeft.setLayout(new BoxLayout(hLeft, BoxLayout.Y_AXIS));
         hLeft.setOpaque(false);
 
-        JLabel lblTitle = new JLabel("Data Siswa");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        JLabel lblTitle = new JLabel("📚  Data Siswa");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
         lblTitle.setForeground(Color.WHITE);
 
         JLabel lblSub = new JLabel("Kelola data, nilai, dan peringkat siswa secara otomatis");
-        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblSub.setForeground(new Color(200, 210, 255));
 
         hLeft.add(lblTitle);
-        hLeft.add(Box.createVerticalStrut(3));
+        hLeft.add(Box.createVerticalStrut(4));
         hLeft.add(lblSub);
         header.add(hLeft, BorderLayout.WEST);
 
         // =====================
-        // SIDEBAR (kiri) — dibungkus JScrollPane
+        // FORM AREA (LEFT SIDEBAR)
         // =====================
+        JPanel sidebar = new JPanel(new BorderLayout());
+        sidebar.setPreferredSize(new Dimension(300, 0));
+        sidebar.setBackground(CARD);
+        sidebar.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, BORDER_CLR));
+
         JPanel formInner = new JPanel();
         formInner.setLayout(new BoxLayout(formInner, BoxLayout.Y_AXIS));
         formInner.setBackground(CARD);
-        formInner.setBorder(new EmptyBorder(20, 16, 20, 16));
+        formInner.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Form title
         JLabel formTitle = new JLabel("Input Data Siswa");
-        formTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        formTitle.setFont(new Font("Segoe UI", Font.BOLD, 15));
         formTitle.setForeground(TEXT_DARK);
         formTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         formInner.add(formTitle);
-        formInner.add(makeSeparator());
+        formInner.add(Box.createVerticalStrut(16));
 
-        // --- Data Diri ---
-        addSectionLabel(formInner, "DATA DIRI");
-        txtId     = addFormField(formInner, "ID Siswa *", "Contoh: S001");
-        txtNama   = addFormField(formInner, "Nama Siswa *", "Nama lengkap siswa");
-        txtAlamat = addFormField(formInner, "Alamat", "Kota / Kabupaten");
+        txtId    = addFormField(formInner, "ID Siswa", "Contoh: S004");
+        txtNama  = addFormField(formInner, "Nama Siswa", "Nama lengkap");
+        txtAlamat= addFormField(formInner, "Alamat", "Kota/Kabupaten");
 
         formInner.add(createLabel("Jenis Kelamin"));
         formInner.add(Box.createVerticalStrut(4));
-        cbJK = new JComboBox<>(new String[]{"L", "P"});
+        cbJK = new JComboBox<>(new String[]{"L","P"});
         styleCombo(cbJK);
-        cbJK.setAlignmentX(Component.LEFT_ALIGNMENT);
         formInner.add(cbJK);
-        formInner.add(Box.createVerticalStrut(14));
+        formInner.add(Box.createVerticalStrut(12));
 
-        // --- Nilai ---
-        addSectionLabel(formInner, "NILAI");
-        txtTugas = addFormField(formInner, "Nilai Tugas *", "0 – 100");
-        txtUTS   = addFormField(formInner, "Nilai UTS *",   "0 – 100");
-        txtUAS   = addFormField(formInner, "Nilai UAS *",   "0 – 100");
+        txtTugas = addFormField(formInner, "Nilai Tugas", "0 - 100");
+        txtUTS   = addFormField(formInner, "Nilai UTS", "0 - 100");
+        txtUAS   = addFormField(formInner, "Nilai UAS", "0 - 100");
 
         // Preview nilai akhir & grade
-        JPanel previewPanel = new JPanel(new GridLayout(2, 2, 8, 6));
-        previewPanel.setBackground(new Color(241, 245, 249));
+        formInner.add(Box.createVerticalStrut(6));
+        JPanel previewPanel = new JPanel(new GridLayout(2,2,8,4));
+        previewPanel.setBackground(new Color(241,245,249));
         previewPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_CLR),
-            new EmptyBorder(10, 12, 10, 12)));
-        previewPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 68));
-        previewPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
+            BorderFactory.createLineBorder(BORDER_CLR), new EmptyBorder(8,10,8,10)));
+        previewPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         previewPanel.add(makeSmallLabel("Nilai Akhir:"));
         lblNilaiAkhir = new JLabel("-");
-        lblNilaiAkhir.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblNilaiAkhir.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblNilaiAkhir.setForeground(PRIMARY);
         previewPanel.add(lblNilaiAkhir);
-
         previewPanel.add(makeSmallLabel("Grade:"));
         lblGrade = new JLabel("-");
-        lblGrade.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblGrade.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblGrade.setForeground(SUCCESS);
         previewPanel.add(lblGrade);
-
         formInner.add(previewPanel);
-        formInner.add(Box.createVerticalStrut(18));
+        formInner.add(Box.createVerticalStrut(16));
 
-        // --- Tombol Aksi ---
-        addSectionLabel(formInner, "AKSI");
+        // Buttons
         JPanel btnGrid = new JPanel(new GridLayout(3, 2, 8, 8));
         btnGrid.setOpaque(false);
-        btnGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 132));
-        btnGrid.setAlignmentX(Component.LEFT_ALIGNMENT);
-
+        btnGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         btnTambah    = makeBtn("Tambah", SUCCESS);
         btnEdit      = makeBtn("Edit", WARNING);
         btnHapus     = makeBtn("Hapus", DANGER);
         btnRefresh   = makeBtn("Refresh", INFO);
-        btnSortNilai = makeBtn("Sort Nilai", PURPLE);
+        btnSortNilai = makeBtn("🏆 Ranking", PURPLE);
         JButton btnClear = makeBtn("Reset", NEUTRAL);
-
         btnGrid.add(btnTambah);
         btnGrid.add(btnEdit);
         btnGrid.add(btnHapus);
@@ -167,19 +164,11 @@ public class FormSiswa extends JFrame {
         btnGrid.add(btnSortNilai);
         btnGrid.add(btnClear);
         formInner.add(btnGrid);
-        formInner.add(Box.createVerticalStrut(8));
 
-        // Sidebar dengan scroll
-        JScrollPane sidebarScroll = new JScrollPane(formInner,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        sidebarScroll.setPreferredSize(new Dimension(270, 0));
-        sidebarScroll.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, BORDER_CLR));
-        sidebarScroll.getVerticalScrollBar().setUnitIncrement(12);
-        sidebarScroll.getViewport().setBackground(CARD);
+        sidebar.add(formInner, BorderLayout.NORTH);
 
         // =====================
-        // TABLE AREA (kanan)
+        // TABLE AREA (RIGHT)
         // =====================
         JPanel tableArea = new JPanel(new BorderLayout());
         tableArea.setBackground(BG);
@@ -189,77 +178,72 @@ public class FormSiswa extends JFrame {
         toolbar.setBackground(CARD);
         toolbar.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_CLR),
-            new EmptyBorder(10, 16, 10, 16)));
+            new EmptyBorder(12, 20, 12, 20)
+        ));
 
-        // Filter kelas
-        JPanel filterLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        JPanel filterLeft = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         filterLeft.setOpaque(false);
-        JLabel lblKelasFilter = new JLabel("Filter Kelas:");
-        lblKelasFilter.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblKelasFilter.setForeground(TEXT_DARK);
+        JLabel lblKelas = new JLabel("Filter Kelas:");
+        lblKelas.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblKelas.setForeground(TEXT_DARK);
         cbKelas = new JComboBox<>();
         cbKelas.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cbKelas.setPreferredSize(new Dimension(150, 32));
-        filterLeft.add(lblKelasFilter);
+        cbKelas.setPreferredSize(new Dimension(160, 34));
+        filterLeft.add(lblKelas);
         filterLeft.add(cbKelas);
         toolbar.add(filterLeft, BorderLayout.WEST);
 
-        // Search
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         searchPanel.setOpaque(false);
-        JLabel lblCari = new JLabel("Cari:");
-        lblCari.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblCari.setForeground(TEXT_DARK);
-        txtCari = new JTextField(16);
+        txtCari = new JTextField(18);
         txtCari.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         txtCari.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_CLR),
-            new EmptyBorder(5, 9, 5, 9)));
+            BorderFactory.createLineBorder(BORDER_CLR), new EmptyBorder(6,10,6,10)));
         txtCari.setToolTipText("Cari nama atau ID siswa...");
-        btnCari = makeBtn("Cari", INFO);
-        searchPanel.add(lblCari);
+        btnCari = makeBtn("🔍 Cari", INFO);
+        searchPanel.add(new JLabel("Cari:"));
         searchPanel.add(txtCari);
         searchPanel.add(btnCari);
         toolbar.add(searchPanel, BorderLayout.EAST);
 
-        // Table
+        // === KOLOM TABEL: "#" = nomor urut, "Ranking" = peringkat nilai ===
+        // Kolom index 0  = "#"       (nomor urut baris, 1,2,3,...)
+        // Kolom index 11 = "Ranking" (peringkat berdasarkan nilai akhir tertinggi)
         String[] cols = {"#", "ID", "Nama Siswa", "JK", "Alamat", "Kelas",
-                         "Tugas", "UTS", "UAS", "Nilai Akhir", "Grade"};
+                         "Tugas", "UTS", "UAS", "Nilai Akhir", "Grade", "Ranking"};
         model = new DefaultTableModel(cols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
         table = new JTable(model);
         styleTable(table);
 
-        JScrollPane tableScroll = new JScrollPane(table,
-            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        tableScroll.setBorder(BorderFactory.createEmptyBorder());
-        tableScroll.getViewport().setBackground(Color.WHITE);
-        tableScroll.getVerticalScrollBar().setUnitIncrement(16);
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setBackground(Color.WHITE);
 
         tableArea.add(toolbar, BorderLayout.NORTH);
-        tableArea.add(tableScroll, BorderLayout.CENTER);
+        tableArea.add(scroll, BorderLayout.CENTER);
 
         // =====================
         // STATUS BAR
         // =====================
         JPanel statusBar = new JPanel(new BorderLayout());
         statusBar.setBackground(new Color(241, 245, 249));
-        statusBar.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(1, 0, 0, 0, BORDER_CLR),
-            new EmptyBorder(7, 20, 7, 20)));
-        JLabel statusLabel = new JLabel(
-            "Sistem Pengelolaan Nilai Siswa  •  Nilai Akhir = (Tugas × 30%) + (UTS × 30%) + (UAS × 40%)");
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        statusLabel.setForeground(TEXT_MUTED);
-        statusBar.add(statusLabel, BorderLayout.WEST);
+        statusBar.setBorder(new EmptyBorder(8, 20, 8, 20));
+        lblStatus = new JLabel("Siap");
+        lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblStatus.setForeground(TEXT_MUTED);
+        JLabel rumusLabel = new JLabel("Nilai Akhir = (Tugas×30%) + (UTS×30%) + (UAS×40%)");
+        rumusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        rumusLabel.setForeground(TEXT_MUTED);
+        statusBar.add(lblStatus, BorderLayout.WEST);
+        statusBar.add(rumusLabel, BorderLayout.EAST);
 
         // =====================
-        // LAYOUT UTAMA
+        // CONTENT SPLIT
         // =====================
         JPanel content = new JPanel(new BorderLayout());
-        content.add(sidebarScroll, BorderLayout.WEST);
+        content.add(sidebar, BorderLayout.WEST);
         content.add(tableArea, BorderLayout.CENTER);
 
         mainPanel.add(header, BorderLayout.NORTH);
@@ -287,13 +271,9 @@ public class FormSiswa extends JFrame {
         txtTugas.addKeyListener(previewKey);
         txtUTS.addKeyListener(previewKey);
         txtUAS.addKeyListener(previewKey);
-
         txtCari.addActionListener(e -> cariData());
     }
 
-    // =====================
-    // PREVIEW NILAI AKHIR
-    // =====================
     private void updatePreview() {
         try {
             double tugas = Double.parseDouble(txtTugas.getText());
@@ -307,71 +287,124 @@ public class FormSiswa extends JFrame {
         } catch (Exception e) {
             lblNilaiAkhir.setText("-");
             lblGrade.setText("-");
-            lblGrade.setForeground(SUCCESS);
         }
     }
 
     // =====================
-    // LOAD COMBO KELAS
+    // MULTITHREADING: loadComboKelas
     // =====================
     private void loadComboKelas() {
-        isLoading = true;
-        cbKelas.removeAllItems();
-        listKelas = new KelasController().getAllKelas();
-        for (Kelas k : listKelas) {
-            cbKelas.addItem(k.getNamaKelas());
-        }
-        isLoading = false;
+        setStatus("Memuat data kelas...", TEXT_MUTED);
+
+        new DatabaseWorker<List<Kelas>>(
+            () -> new KelasController().getAllKelas(),
+            kelasList -> {
+                isLoading = true;
+                cbKelas.removeAllItems();
+                listKelas = kelasList;
+                for (Kelas k : kelasList) cbKelas.addItem(k.getNamaKelas());
+                isLoading = false;
+                setStatus("Data kelas dimuat (" + kelasList.size() + " kelas)", SUCCESS);
+                tampilData();
+            },
+            err -> {
+                setStatus("Gagal memuat kelas: " + err.getMessage(), DANGER);
+            }
+        ).execute();
     }
 
     // =====================
-    // CRUD & DATA
+    // MULTITHREADING: tampilData
     // =====================
     private void tampilData() {
-        model.setRowCount(0);
         if (listKelas == null || listKelas.isEmpty()) return;
         int idx = cbKelas.getSelectedIndex();
         if (idx < 0) return;
         int idKelas = listKelas.get(idx).getIdKelas();
-        for (Siswa s : controller.getByKelas(idKelas)) addRow(s);
+
+        setStatus("Memuat data siswa...", TEXT_MUTED);
+        setButtonsEnabled(false);
+
+        new DatabaseWorker<List<Siswa>>(
+            () -> controller.getByKelas(idKelas),
+            siswaList -> {
+                model.setRowCount(0);
+                // Hitung ranking berdasarkan nilai akhir (descending)
+                List<Siswa> ranked = hitungRanking(siswaList);
+                int no = 1;
+                for (Siswa s : ranked) addRow(s, no++);
+                setStatus("Menampilkan " + siswaList.size() + " siswa  [Thread: EDT]", SUCCESS);
+                setButtonsEnabled(true);
+            },
+            err -> {
+                setStatus("Gagal memuat data: " + err.getMessage(), DANGER);
+                setButtonsEnabled(true);
+            }
+        ).execute();
     }
 
+    // =====================
+    // MULTITHREADING: sortData — sort & tampilkan ranking global
+    // =====================
     private void sortData() {
-        model.setRowCount(0);
-        for (Siswa s : controller.sortNilai()) addRow(s);
+        setStatus("Mengurutkan data berdasarkan nilai...", TEXT_MUTED);
+        setButtonsEnabled(false);
+
+        new DatabaseWorker<List<Siswa>>(
+            () -> controller.sortNilai(),
+            siswaList -> {
+                model.setRowCount(0);
+                List<Siswa> ranked = hitungRanking(siswaList);
+                int no = 1;
+                for (Siswa s : ranked) addRow(s, no++);
+                setStatus("Data diurutkan berdasarkan nilai akhir (tertinggi ke terendah)  [Thread: EDT]", SUCCESS);
+                setButtonsEnabled(true);
+            },
+            err -> {
+                setStatus("Gagal mengurutkan: " + err.getMessage(), DANGER);
+                setButtonsEnabled(true);
+            }
+        ).execute();
     }
 
-    private void addRow(Siswa s) {
-        model.addRow(new Object[]{
-            s.getRanking(), s.getIdSiswa(), s.getNamaSiswa(),
-            s.getJenisKelamin().equals("L") ? "L" : "P",
-            s.getAlamat(), s.getNamaKelas(),
-            String.format("%.1f", s.getNilaiTugas()),
-            String.format("%.1f", s.getNilaiUTS()),
-            String.format("%.1f", s.getNilaiUAS()),
-            String.format("%.1f", s.getNilaiAkhir()),
-            s.getGrade()
-        });
+    /**
+     * Menghitung ranking berdasarkan nilai_akhir (descending).
+     * Nilai yang sama mendapat ranking yang sama (dense ranking).
+     */
+    private List<Siswa> hitungRanking(List<Siswa> list) {
+        // Urutkan berdasarkan nilai akhir descending
+        list.sort((a, b) -> Double.compare(b.getNilaiAkhir(), a.getNilaiAkhir()));
+        int rank = 1;
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0 && list.get(i).getNilaiAkhir() == list.get(i-1).getNilaiAkhir()) {
+                list.get(i).setRanking(list.get(i-1).getRanking());
+            } else {
+                list.get(i).setRanking(rank);
+            }
+            rank++;
+        }
+        return list;
     }
 
+    // =====================
+    // MULTITHREADING: tambahData
+    // =====================
     private void tambahData() {
         try {
-            if (txtId.getText().trim().isEmpty())    { showWarn("ID Siswa tidak boleh kosong!");    txtId.requestFocus();    return; }
-            if (txtNama.getText().trim().isEmpty())   { showWarn("Nama Siswa tidak boleh kosong!"); txtNama.requestFocus();  return; }
-            if (txtTugas.getText().trim().isEmpty())  { showWarn("Nilai Tugas tidak boleh kosong!"); txtTugas.requestFocus(); return; }
-            if (txtUTS.getText().trim().isEmpty())    { showWarn("Nilai UTS tidak boleh kosong!");   txtUTS.requestFocus();   return; }
-            if (txtUAS.getText().trim().isEmpty())    { showWarn("Nilai UAS tidak boleh kosong!");   txtUAS.requestFocus();   return; }
+            if (txtId.getText().trim().isEmpty())   { showWarn("ID Siswa tidak boleh kosong!"); txtId.requestFocus(); return; }
+            if (txtNama.getText().trim().isEmpty())  { showWarn("Nama Siswa tidak boleh kosong!"); txtNama.requestFocus(); return; }
+            if (txtTugas.getText().trim().isEmpty()) { showWarn("Nilai Tugas tidak boleh kosong!"); txtTugas.requestFocus(); return; }
+            if (txtUTS.getText().trim().isEmpty())   { showWarn("Nilai UTS tidak boleh kosong!"); txtUTS.requestFocus(); return; }
+            if (txtUAS.getText().trim().isEmpty())   { showWarn("Nilai UAS tidak boleh kosong!"); txtUAS.requestFocus(); return; }
 
             double tugas = Double.parseDouble(txtTugas.getText().trim());
             double uts   = Double.parseDouble(txtUTS.getText().trim());
             double uas   = Double.parseDouble(txtUAS.getText().trim());
-
             if (tugas < 0 || tugas > 100) { showWarn("Nilai Tugas harus antara 0 - 100!"); return; }
-            if (uts   < 0 || uts   > 100) { showWarn("Nilai UTS harus antara 0 - 100!");   return; }
-            if (uas   < 0 || uas   > 100) { showWarn("Nilai UAS harus antara 0 - 100!");   return; }
+            if (uts < 0   || uts > 100)   { showWarn("Nilai UTS harus antara 0 - 100!"); return; }
+            if (uas < 0   || uas > 100)   { showWarn("Nilai UAS harus antara 0 - 100!"); return; }
 
             if (listKelas == null || listKelas.isEmpty()) { showWarn("Data kelas belum tersedia!"); return; }
-
             int idx = cbKelas.getSelectedIndex();
             if (idx < 0) { showWarn("Pilih kelas terlebih dahulu!"); return; }
 
@@ -386,27 +419,46 @@ public class FormSiswa extends JFrame {
             s.setNilaiUAS(uas);
             s.setRanking(0);
 
-            if (controller.tambahSiswa(s)) {
-                showInfo("Data siswa berhasil ditambahkan!");
-                tampilData(); clearForm();
-            } else {
-                showError("Gagal menambahkan data.\nID Siswa mungkin sudah ada.");
-            }
+            setStatus("Menyimpan data siswa...", TEXT_MUTED);
+            setButtonsEnabled(false);
+
+            new DatabaseWorker<Boolean>(
+                () -> controller.tambahSiswa(s),
+                berhasil -> {
+                    setButtonsEnabled(true);
+                    if (berhasil) {
+                        showInfo("Data siswa berhasil ditambahkan!");
+                        setStatus("Siswa " + s.getNamaSiswa() + " berhasil ditambahkan", SUCCESS);
+                        tampilData(); clearForm();
+                    } else {
+                        showError("Gagal menambahkan data.\nID Siswa mungkin sudah ada.");
+                        setStatus("Gagal tambah siswa", DANGER);
+                    }
+                },
+                err -> {
+                    setButtonsEnabled(true);
+                    showError("Error: " + err.getMessage());
+                    setStatus("Error: " + err.getMessage(), DANGER);
+                }
+            ).execute();
+
         } catch (NumberFormatException e) {
-            showError("Nilai harus berupa angka!");
+            showError("Nilai Tugas, UTS, dan UAS harus berupa angka!");
         }
     }
 
+    // =====================
+    // MULTITHREADING: editData
+    // =====================
     private void editData() {
         if (txtId.getText().trim().isEmpty()) { showWarn("Pilih siswa dari tabel terlebih dahulu!"); return; }
         try {
             double tugas = Double.parseDouble(txtTugas.getText().trim());
             double uts   = Double.parseDouble(txtUTS.getText().trim());
             double uas   = Double.parseDouble(txtUAS.getText().trim());
-
             if (tugas < 0 || tugas > 100) { showWarn("Nilai Tugas harus antara 0 - 100!"); return; }
-            if (uts   < 0 || uts   > 100) { showWarn("Nilai UTS harus antara 0 - 100!");   return; }
-            if (uas   < 0 || uas   > 100) { showWarn("Nilai UAS harus antara 0 - 100!");   return; }
+            if (uts < 0   || uts > 100)   { showWarn("Nilai UTS harus antara 0 - 100!"); return; }
+            if (uas < 0   || uas > 100)   { showWarn("Nilai UAS harus antara 0 - 100!"); return; }
 
             int idx = cbKelas.getSelectedIndex();
             Siswa s = new Siswa();
@@ -419,17 +471,37 @@ public class FormSiswa extends JFrame {
             s.setNilaiUTS(uts);
             s.setNilaiUAS(uas);
 
-            if (controller.updateSiswa(s)) {
-                showInfo("Data siswa berhasil diperbarui!");
-                tampilData(); clearForm();
-            } else {
-                showError("Gagal memperbarui data siswa.");
-            }
+            setStatus("Memperbarui data siswa...", TEXT_MUTED);
+            setButtonsEnabled(false);
+
+            new DatabaseWorker<Boolean>(
+                () -> controller.updateSiswa(s),
+                berhasil -> {
+                    setButtonsEnabled(true);
+                    if (berhasil) {
+                        showInfo("Data siswa berhasil diperbarui!");
+                        setStatus("Siswa " + s.getNamaSiswa() + " berhasil diperbarui", SUCCESS);
+                        tampilData(); clearForm();
+                    } else {
+                        showError("Gagal memperbarui data siswa.");
+                        setStatus("Gagal update siswa", DANGER);
+                    }
+                },
+                err -> {
+                    setButtonsEnabled(true);
+                    showError("Error: " + err.getMessage());
+                    setStatus("Error: " + err.getMessage(), DANGER);
+                }
+            ).execute();
+
         } catch (NumberFormatException e) {
             showError("Nilai harus berupa angka!");
         }
     }
 
+    // =====================
+    // MULTITHREADING: hapusData
+    // =====================
     private void hapusData() {
         int row = table.getSelectedRow();
         if (row < 0) { showWarn("Pilih siswa dari tabel terlebih dahulu!"); return; }
@@ -439,21 +511,53 @@ public class FormSiswa extends JFrame {
             "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (opt != JOptionPane.YES_OPTION) return;
 
-        String id      = model.getValueAt(row, 1).toString();
-        int    idKelas = listKelas.get(cbKelas.getSelectedIndex()).getIdKelas();
-        if (controller.hapusSiswa(id, idKelas)) {
-            showInfo("Data siswa berhasil dihapus!");
-            tampilData(); clearForm();
-        } else {
-            showError("Gagal menghapus data siswa.");
-        }
+        String id = model.getValueAt(row, 1).toString();
+        int idKelas = listKelas.get(cbKelas.getSelectedIndex()).getIdKelas();
+
+        setStatus("Menghapus data siswa...", TEXT_MUTED);
+        setButtonsEnabled(false);
+
+        new DatabaseWorker<Boolean>(
+            () -> controller.hapusSiswa(id, idKelas),
+            berhasil -> {
+                setButtonsEnabled(true);
+                if (berhasil) {
+                    showInfo("Data siswa berhasil dihapus!");
+                    setStatus("Siswa " + nama + " berhasil dihapus", SUCCESS);
+                    tampilData(); clearForm();
+                } else {
+                    showError("Gagal menghapus data siswa.");
+                    setStatus("Gagal hapus siswa", DANGER);
+                }
+            },
+            err -> {
+                setButtonsEnabled(true);
+                showError("Error: " + err.getMessage());
+                setStatus("Error: " + err.getMessage(), DANGER);
+            }
+        ).execute();
     }
 
+    // =====================
+    // MULTITHREADING: cariData
+    // =====================
     private void cariData() {
         String kw = txtCari.getText().trim();
         if (kw.isEmpty()) { tampilData(); return; }
-        model.setRowCount(0);
-        for (Siswa s : controller.cariSiswa(kw)) addRow(s);
+
+        setStatus("Mencari siswa dengan kata kunci: " + kw + "...", TEXT_MUTED);
+
+        new DatabaseWorker<List<Siswa>>(
+            () -> controller.cariSiswa(kw),
+            siswaList -> {
+                model.setRowCount(0);
+                List<Siswa> ranked = hitungRanking(siswaList);
+                int no = 1;
+                for (Siswa s : ranked) addRow(s, no++);
+                setStatus("Ditemukan " + siswaList.size() + " siswa untuk \"" + kw + "\"", SUCCESS);
+            },
+            err -> setStatus("Gagal mencari: " + err.getMessage(), DANGER)
+        ).execute();
     }
 
     private void pilihData() {
@@ -470,6 +574,41 @@ public class FormSiswa extends JFrame {
         updatePreview();
     }
 
+    /**
+     * Tambah baris ke tabel.
+     * @param s   objek Siswa (sudah memiliki ranking yang dihitung di hitungRanking)
+     * @param no  nomor urut baris (1, 2, 3, ...)
+     */
+    private void addRow(Siswa s, int no) {
+        String rankLabel = getRankLabel(s.getRanking());
+        model.addRow(new Object[]{
+            no,                                        // col 0  = "#" (nomor urut)
+            s.getIdSiswa(),                            // col 1  = ID
+            s.getNamaSiswa(),                          // col 2  = Nama
+            s.getJenisKelamin().equals("L") ? "👦 L" : "👧 P", // col 3 = JK
+            s.getAlamat(),                             // col 4  = Alamat
+            s.getNamaKelas(),                          // col 5  = Kelas
+            String.format("%.1f", s.getNilaiTugas()),  // col 6  = Tugas
+            String.format("%.1f", s.getNilaiUTS()),    // col 7  = UTS
+            String.format("%.1f", s.getNilaiUAS()),    // col 8  = UAS
+            String.format("%.1f", s.getNilaiAkhir()),  // col 9  = Nilai Akhir
+            s.getGrade(),                              // col 10 = Grade
+            rankLabel                                  // col 11 = Ranking
+        });
+    }
+
+    /**
+     * Konversi angka ranking ke label dengan emoji medali.
+     */
+    private String getRankLabel(int rank) {
+        switch (rank) {
+            case 1: return "🥇 #1";
+            case 2: return "🥈 #2";
+            case 3: return "🥉 #3";
+            default: return "#" + rank;
+        }
+    }
+
     private void clearForm() {
         txtId.setText(""); txtNama.setText(""); txtAlamat.setText("");
         txtTugas.setText(""); txtUTS.setText(""); txtUAS.setText("");
@@ -477,13 +616,24 @@ public class FormSiswa extends JFrame {
         cbJK.setSelectedIndex(0);
         lblNilaiAkhir.setText("-");
         lblGrade.setText("-");
-        lblGrade.setForeground(SUCCESS);
         table.clearSelection();
     }
 
-    // =====================
-    // STYLE HELPERS
-    // =====================
+    private void setStatus(String msg, Color color) {
+        lblStatus.setText(msg);
+        lblStatus.setForeground(color);
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        btnTambah.setEnabled(enabled);
+        btnEdit.setEnabled(enabled);
+        btnHapus.setEnabled(enabled);
+        btnRefresh.setEnabled(enabled);
+        btnSortNilai.setEnabled(enabled);
+        btnCari.setEnabled(enabled);
+    }
+
+    // === STYLE HELPERS ===
     private JTextField addFormField(JPanel parent, String label, String tip) {
         JLabel lbl = createLabel(label);
         lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -491,40 +641,13 @@ public class FormSiswa extends JFrame {
         parent.add(Box.createVerticalStrut(4));
         JTextField tf = new JTextField();
         tf.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        tf.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
         tf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_CLR),
-            new EmptyBorder(5, 10, 5, 10)));
+            BorderFactory.createLineBorder(BORDER_CLR), new EmptyBorder(5,10,5,10)));
         tf.setToolTipText(tip);
-        tf.setAlignmentX(Component.LEFT_ALIGNMENT);
         parent.add(tf);
-        parent.add(Box.createVerticalStrut(12));
+        parent.add(Box.createVerticalStrut(10));
         return tf;
-    }
-
-    private void addSectionLabel(JPanel parent, String text) {
-        JLabel lbl = new JLabel(text);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 10));
-        lbl.setForeground(new Color(148, 163, 184));
-        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
-        parent.add(lbl);
-        parent.add(Box.createVerticalStrut(8));
-    }
-
-    private JSeparator makeSeparator() {
-        JSeparator sep = new JSeparator();
-        sep.setForeground(BORDER_CLR);
-        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
-        sep.setAlignmentX(Component.LEFT_ALIGNMENT);
-        // wrap in panel so BoxLayout respects the max height
-        JPanel wrap = new JPanel();
-        wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
-        wrap.setOpaque(false);
-        wrap.add(Box.createVerticalStrut(8));
-        wrap.add(sep);
-        wrap.add(Box.createVerticalStrut(12));
-        wrap.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return sep;
     }
 
     private JLabel createLabel(String text) {
@@ -543,7 +666,7 @@ public class FormSiswa extends JFrame {
 
     private void styleCombo(JComboBox<?> cb) {
         cb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cb.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+        cb.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
     }
 
     private JButton makeBtn(String text, Color color) {
@@ -551,11 +674,12 @@ public class FormSiswa extends JFrame {
         b.setBackground(color);
         b.setForeground(Color.BLACK);
         b.setFocusPainted(false);
-        b.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        b.setFont(new Font("Segoe UI", Font.BOLD, 12));
         b.setCursor(new Cursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(color.darker(), 1),
-            new EmptyBorder(6, 10, 6, 10)));
+            new EmptyBorder(7, 12, 7, 12)
+        ));
         b.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) { b.setBackground(color.darker()); }
             public void mouseExited(java.awt.event.MouseEvent e)  { b.setBackground(color); }
@@ -564,7 +688,7 @@ public class FormSiswa extends JFrame {
     }
 
     private void styleTable(JTable t) {
-        t.setRowHeight(36);
+        t.setRowHeight(38);
         t.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         t.setGridColor(new Color(241, 245, 249));
         t.setSelectionBackground(new Color(219, 234, 254));
@@ -575,11 +699,11 @@ public class FormSiswa extends JFrame {
         t.getTableHeader().setBackground(new Color(241, 245, 249));
         t.getTableHeader().setForeground(TEXT_MUTED);
         t.getTableHeader().setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, PRIMARY));
-        t.getTableHeader().setPreferredSize(new Dimension(0, 38));
+        t.getTableHeader().setPreferredSize(new Dimension(0, 40));
 
-        final int gradeCol = 10;
+        final int COL_GRADE  = 10;
+        final int COL_RANK   = 11;
 
-        // Alternating row + grade color renderer
         t.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(JTable tbl, Object val,
                     boolean sel, boolean foc, int row, int col) {
@@ -588,24 +712,47 @@ public class FormSiswa extends JFrame {
                     c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(248, 250, 252));
                     c.setForeground(TEXT_DARK);
                 }
-                if (col == gradeCol && val != null && !sel) {
+
+                // Kolom Grade — background warna sesuai grade
+                if (col == COL_GRADE && val != null && !sel) {
                     c.setBackground(getGradeColor(val.toString()));
                     c.setForeground(Color.WHITE);
-                    ((JLabel) c).setHorizontalAlignment(SwingConstants.CENTER);
-                    ((JLabel) c).setFont(getFont().deriveFont(Font.BOLD));
-                } else if (col == gradeCol && sel) {
-                    ((JLabel) c).setHorizontalAlignment(SwingConstants.CENTER);
-                } else if (col == 0 || col == 3 || col == 6 || col == 7 || col == 8 || col == 9) {
-                    ((JLabel) c).setHorizontalAlignment(SwingConstants.CENTER);
+                    ((JLabel)c).setHorizontalAlignment(SwingConstants.CENTER);
+                    ((JLabel)c).setFont(getFont().deriveFont(Font.BOLD));
+                }
+                // Kolom Ranking — warna medali untuk top 3
+                else if (col == COL_RANK && val != null && !sel) {
+                    String rankStr = val.toString();
+                    if (rankStr.startsWith("🥇")) {
+                        c.setBackground(new Color(255, 248, 220)); // gold tint
+                        c.setForeground(new Color(180, 120, 0));
+                        ((JLabel)c).setFont(getFont().deriveFont(Font.BOLD));
+                    } else if (rankStr.startsWith("🥈")) {
+                        c.setBackground(new Color(240, 242, 244)); // silver tint
+                        c.setForeground(new Color(100, 116, 139));
+                        ((JLabel)c).setFont(getFont().deriveFont(Font.BOLD));
+                    } else if (rankStr.startsWith("🥉")) {
+                        c.setBackground(new Color(251, 236, 221)); // bronze tint
+                        c.setForeground(new Color(140, 80, 30));
+                        ((JLabel)c).setFont(getFont().deriveFont(Font.BOLD));
+                    } else {
+                        if (!sel) c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(248, 250, 252));
+                        c.setForeground(TEXT_MUTED);
+                    }
+                    ((JLabel)c).setHorizontalAlignment(SwingConstants.CENTER);
+                }
+                // Kolom yang center-aligned
+                else if (col == 0 || col == 6 || col == 7 || col == 8 || col == 9 || col == 3) {
+                    ((JLabel)c).setHorizontalAlignment(SwingConstants.CENTER);
                 } else {
-                    ((JLabel) c).setHorizontalAlignment(SwingConstants.LEFT);
+                    ((JLabel)c).setHorizontalAlignment(SwingConstants.LEFT);
                 }
                 return c;
             }
         });
 
-        // Column widths
-        int[] widths = {40, 70, 160, 50, 120, 90, 60, 60, 60, 80, 60};
+        // Lebar kolom: #, ID, Nama, JK, Alamat, Kelas, Tugas, UTS, UAS, NilaiAkhir, Grade, Ranking
+        int[] widths = {40, 65, 155, 55, 115, 95, 60, 60, 60, 85, 60, 80};
         for (int i = 0; i < widths.length && i < t.getColumnCount(); i++) {
             t.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
@@ -621,7 +768,7 @@ public class FormSiswa extends JFrame {
         }
     }
 
-    private void showInfo(String msg)  { JOptionPane.showMessageDialog(this, msg, "Sukses",     JOptionPane.INFORMATION_MESSAGE); }
-    private void showWarn(String msg)  { JOptionPane.showMessageDialog(this, msg, "Peringatan", JOptionPane.WARNING_MESSAGE);     }
-    private void showError(String msg) { JOptionPane.showMessageDialog(this, msg, "Error",      JOptionPane.ERROR_MESSAGE);       }
+    private void showInfo(String msg)  { JOptionPane.showMessageDialog(this, msg, "Sukses", JOptionPane.INFORMATION_MESSAGE); }
+    private void showWarn(String msg)  { JOptionPane.showMessageDialog(this, msg, "Peringatan", JOptionPane.WARNING_MESSAGE); }
+    private void showError(String msg) { JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE); }
 }
